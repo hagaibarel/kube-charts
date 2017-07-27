@@ -19,10 +19,14 @@ helm install <chart-folder>/
 
 ### curator
 
-Curator: Tending your Elasticsearch indices
+Curator: Tending your Elasticsearch indices. 
+
+This chart uses [bobrik's](https://github.com/bobrik/docker-curator) docker curator image, kudos to you man!
+
+More info regarding curator can be found in the [official repo](https://github.com/elastic/curator)
 
 ### k8s-aws-logging
 
-Harvest logs with fluentd and ship them to AWS ES service via proxy.
+Harvest logs with fluentd and ship them to AWS' ES service via proxy.
 
 This chart uses the great proxy written by [kopeio](https://github.com/kopeio/aws-es-proxy), check it out. Also, the chart is based on the elasticsearch-logging component that's part of [kubernetes' add-ons](https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/fluentd-elasticsearch), and was inspired by it.
