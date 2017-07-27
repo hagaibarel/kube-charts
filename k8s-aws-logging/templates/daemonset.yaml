@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: {{ .Values.fluentd.name }}
+  labels:
+    app: {{ .Values.fluentd.name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.fluentd.name }}
+    spec:
+      containers:
+      - name: {{ .Values.fluentd.name }}
+        image: {{ .Values.fluentd.image.repo }}/{{ .Values.fluentd.image.name }}:{{ .Values.fluentd.image.tag }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - '/usr/sbin/td-agent 2>&1 >> /var/log/fluentd.log'
+        volumeMounts:
+        - name:  {{ .Values.fluentd.mounts.syslog.name }}
+          mountPath: {{ .Values.fluentd.mounts.syslog.path }}
+        - name: {{ .Values.fluentd.mounts.dockerlog.name }}
+          mountPath: {{ .Values.fluentd.mounts.dockerlog.path }}
+          readOnly: true
+        - name: config
+          mountPath: /etc/td-agent
+      terminationGracePeriodSeconds: 30
+      {{- if .Values.fluentd.placeOnMasters.enabled }}
+      tolerations:
+      - key: {{ .Values.fluentd.placeOnMasters.tolerationKey }}
+        effect: NoSchedule
+      {{- end }}
+      volumes:
+      - name: {{ .Values.fluentd.mounts.syslog.name }}
+        hostPath:
+          path: {{ .Values.fluentd.mounts.syslog.path }}
+      - name: {{ .Values.fluentd.mounts.dockerlog.name }}
+        hostPath:
+          path: {{ .Values.fluentd.mounts.dockerlog.path }}
+      - name: config
+        configMap:
+          name: {{ .Chart.Name }}-config
+

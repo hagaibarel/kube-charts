@@ -1,0 +1,38 @@
+service:
+  name: elasticsearch-logging
+  port: 9200
+
+proxy:
+  name: aws-es-proxy
+  # note that the secret should be applied to the cluster beforehand
+  # it should holds two kyes: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+  secret: aws-es-creds
+  replicas: 2
+  image:
+    repo: kope
+    name: aws-es-proxy
+    tag: latest
+  env:
+    AWS_REGION: #add the relevent aws region, like us-east-1
+    ES: #add the relevent aws es endpoint 
+
+fluentd:
+  name: aws-es-fluentd
+  image:
+    repo: "gcr.io/google_containers"
+    name: fluentd-elasticsearch
+    tag: "1.22"
+  memory: "200Mi"
+  cpu: "100m"
+  mounts:
+    syslog:
+      name: varlog
+      path: /var/log
+    dockerlog:
+      name: varlibdockercontainers
+      path: /var/lib/docker/containers
+  # set to false to ignore toleration and not place fluentd pods on
+  # master nodes
+  placeOnMasters: 
+    enabled: true
+    tolerationKey: node-role.kubernetes.io/master

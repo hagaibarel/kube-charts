@@ -1,0 +1,20 @@
+image:
+  name: bobrik/curator
+  #see compatability matrix for relevent versions:
+  #https://github.com/elastic/curator#compatibility-matrix
+  #https://hub.docker.com/r/bobrik/curator/tags/
+  tag: "5.1.1"
+
+indicesAge: 7
+
+mountPath: /etc/config
+
+schedule: "0 1 * * *"
+
+history:
+  successfulJobs: 1
+  failedJobs: 3
+
+elasticsearch:
+  host: elasticsearch-logging
+  port: 9200

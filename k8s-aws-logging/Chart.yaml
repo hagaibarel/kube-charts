@@ -1,0 +1,13 @@
+apiVersion: v1
+description: Harvest logs with fluentd and ship them to AWS ES service via proxy
+name: k8s-aws-logging
+version: 0.1.0
+home: https://aws.amazon.com/elasticsearch-service/
+icon: https://d0.awsstatic.com/amazonkinesis/KinesisAnalytics_KA_BannerIcon.png
+sources:
+  - https://aws.amazon.com/elasticsearch-service/
+  - https://github.com/kopeio/aws-es-proxy
+maintainers:
+  - name: Hagai Barel
+    email: hagaib@codevalue.net
+engine: gotpl
