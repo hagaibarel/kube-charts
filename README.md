@@ -1,10 +1,10 @@
 # kube-charts
 Assortment of helm charts I wrote while working on various projects. <b>Use at your on risk!</b> 
 
-Thess is by far <b>not</b> production grade charts (although some are used in production) and can't be used as is. 
-Check the relevent docs in each chart folder for details on how to configure and use them.
+These are by far <b>not</b> production grade charts (although some are used in production) and can't be used as is. 
+Check the relevant docs in each chart folder for details on how to configure and use them.
 
-Contirbuters are welcomed!
+Contributors are welcomed!
 
 ## How to use
 
