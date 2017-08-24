@@ -1,0 +1,97 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Values.nginx.name }}
+  labels:
+    k8s-addon: {{ .Values.addonName  }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+  use-proxy-protocol: "true"
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.nginx.name }}
+  labels:
+    k8s-addon: {{ .Values.addonName  }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+    {{- if .Values.dns.configure }}
+    dns.alpha.kubernetes.io/{{ .Values.dns.type}}: {{ .Values.dns.hosts | quote }}
+    {{- end }}
+spec:
+  type: LoadBalancer
+  selector:
+    app: {{ .Values.nginx.name }}
+  ports:
+  - name: http
+    port: {{ .Values.nginx.ports.http }}
+    targetPort: http
+  - name: https
+    port: {{ .Values.nginx.ports.https }}
+    targetPort: https
+
+---
+
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: {{ .Values.nginx.name }}
+  labels:
+    k8s-addon: {{ .Values.addonName  }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: {{ .Values.nginx.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.nginx.name }}
+        k8s-addon: {{ .Values.addonName  }}
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - image: "{{ .Values.repository}}/{{ .Values.nginx.image}}:{{ .Values.nginx.tag}}"
+        name: {{ .Values.nginx.name }}
+        imagePullPolicy: Always
+        ports:
+          - name: http
+            containerPort: {{ .Values.nginx.ports.http }}
+            protocol: TCP
+          - name: https
+            containerPort: {{ .Values.nginx.ports.https }}
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10254
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        args:
+        - /nginx-ingress-controller
+        - --default-backend-service=$(POD_NAMESPACE)/{{ .Values.backend.name }}
+        - --configmap=$(POD_NAMESPACE)/{{ .Values.nginx.name }}
+        - --publish-service=$(POD_NAMESPACE)/{{ .Values.nginx.name }}

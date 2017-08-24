@@ -1,0 +1,62 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.backend.name }}
+  labels:
+    k8s-addon: {{ .Values.addonName  }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  ports:
+  - port: {{ .Values.backend.ports.service }}
+    targetPort: http
+  selector:
+    app: {{ .Values.backend.name }}
+
+---
+
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: {{ .Values.backend.name }}
+  labels:
+    k8s-addon: {{ .Values.addonName  }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-addon: {{ .Values.addonName  }}
+        app: {{ .Values.backend.name }}
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: default-http-backend
+        image: "{{ .Values.repository}}/{{ .Values.backend.image}}:{{ .Values.backend.tag}}"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.backend.ports.container  }}
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: 10m
+            memory: 20Mi
+          requests:
+            cpu: 10m
+            memory: 20Mi
+        ports:
+        - name: http
+          containerPort: {{ .Values.backend.ports.container  }}
+          protocol: TCP

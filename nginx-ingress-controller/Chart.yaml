@@ -1,0 +1,10 @@
+name: nginx-ingress-controller
+version: 0.1.0
+description: Nginx ingress controller in AWS behind an ELB configured with Proxy Protocol
+icon: https://nginx.org/nginx.png
+sources:
+  - https://github.com/kubernetes/ingress/tree/master/examples/aws/nginx
+maintainers:
+  - name: Hagai Barel
+    email: hagaib@codevalue.net
+engine: gotpl
