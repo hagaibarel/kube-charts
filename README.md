@@ -39,6 +39,12 @@ This chart was inspired by the [examples found here](https://github.com/kubernet
 
 For a more robust solution, you should check out the official [nginx-ingress](https://github.com/kubernetes/charts/tree/master/stable/nginx-ingress) chart on the stable chart repository.
 
+### kafka-manager
+
+A tool for managing Apache Kafka.
+
+For more details on kafka-manager itself, please refer to the official [github repo](https://github.com/yahoo/kafka-manager). I'm using sheepkiller's docker [image](https://github.com/sheepkiller/kafka-manager-docker), check out the repo for more info.
+
 ## TODO
 - [ ] Write documentation for each chart
 - [ ] Add notes.txt for each chart to help guide folks after chart installation

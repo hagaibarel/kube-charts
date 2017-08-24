@@ -1,0 +1,13 @@
+apiVersion: v1
+description: Kafka-manager GUI interface for managing Kafka clusters
+name: kafka-manager
+version: 0.1.0
+urls:
+  - https://github.com/yahoo/kafka-manager
+keywords:
+  - kafka
+maintainers:
+  - name: Hagai Barel
+    email: hagaib@codevalue.net
+icon: https://kafka.apache.org/images/logo.png
+engine: gotpl
