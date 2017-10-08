@@ -1,4 +1,4 @@
-apiVersion: batch/v2alpha1
+apiVersion: batch/v2alpha1 #for API server versions >= 1.8.0 use batch/v1beta1
 kind: CronJob
 metadata:
   name: {{ .Chart.Name }}
