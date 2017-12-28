@@ -1,31 +1,96 @@
-repository: gcr.io/google_containers
-
-addonName: ingress-nginx.addons.k8s.io
-
 # if running with kops' dns-controller, control route53 records creation
 # https://github.com/kubernetes/kops/tree/master/dns-controller
 dns:
-  configure: true
+  configure: false
   # could be more than one, 
   # the syntax is a comma separated list of fully qualified domain names
   # below is an example, don't use it (like, ever)
   hosts: foo.example.com,bar.example.org
   type: external
 
+# place an acm certificate on the elb
+# http://docs.aws.amazon.com/acm/latest/userguide/acm-services.html
+# to enable, add nginx.ingress.kubernetes.io/force-ssl-redirect: "true" annotation on the ingress iteself
+tls:
+  enabled: true
+  acmArn: arn:aws:acm:<your-region>:<your-account-number>:certifiacte/112233
+
+rbac:
+  create: true
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
 backend:
-  name: nginx-default-backend
-  image: defaultbackend
-  tag: "1.0"
+  name: default-backend
+  image: 
+    repository: gcr.io/google_containers/defaultbackend
+    tag: "1.4"
   ports:
     service: 80
     container: 8080
-  replicas: 2
+  replicas: 1
 
-nginx:
-  name: ingress-nginx
-  image: nginx-ingress-controller
-  tag: "0.9.0-beta.11"
+  resources:
+    limits:
+      cpu: 10m
+      memory: 20Mi
+    requests:
+      cpu: 10m
+      memory: 20Mi
+
+controller:
+  name: controller
+  image: 
+    repository: gcr.io/google_containers/nginx-ingress-controller
+    tag: "0.9.0-beta.15"
   ports:
     http: 80
     https: 443
-  replicas: 3
+    health: 10254
+    stats: 18080
+
+  autoscale:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetAverageUtilization: 50
+
+  electionID: ingress-controller-leader
+
+  ingressClass: nginx
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 200m
+      memory: 128Mi
+
+  stats:
+    enabled: true
+
+# see here for more details https://hub.docker.com/r/sophos/nginx-vts-exporter/
+statsExporter:
+  name: stats-exporter
+  image:
+    repository: sophos/nginx-vts-exporter
+    tag: v0.8
+
+  endpoint: /metrics
+  metricsNamespace: metrics
+  statusPage: http://localhost:18080/nginx_status/format/json
+
+  resources: 
+    limits:
+      cpu: 10m
+      memory: 20Mi
+    requests:
+      cpu: 10m
+      memory: 20Mi
+  
+  port: 9913

@@ -1,0 +1,94 @@
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: {{ template "nginx-ingress.controller.fullname" . }}
+  labels:
+    app: {{ template "nginx-ingress.name" . }}
+    component: {{ .Values.controller.name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "nginx-ingress.name" . }}
+      component: {{ .Values.controller.name }}
+  strategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "nginx-ingress.name" . }}
+        component: {{ .Values.controller.name }}
+    spec:
+      {{- if .Values.rbac.create }}
+      serviceAccountName: {{ template "nginx-ingress.name" . }}
+      {{- end }}
+      terminationGracePeriodSeconds: 60
+      containers:
+      - image: "{{ .Values.controller.image.repository}}:{{ .Values.controller.image.tag}}"
+        name: {{ template "nginx-ingress.controller.fullname" . }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.controller.ports.http }}
+          protocol: TCP
+        - name: https
+          containerPort: {{ .Values.controller.ports.https }}
+          protocol: TCP
+        - name: health
+          containerPort: 10254
+          protocol: TCP
+        {{- if .Values.controller.stats.enabled }}
+        - name: stats
+          containerPort: {{ .Values.controller.ports.stats }}
+          protocol: TCP
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10254
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 10254
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        args:
+        - /nginx-ingress-controller
+        - --default-backend-service=$(POD_NAMESPACE)/{{ template "nginx-ingress.defaultBackend.fullname" . }}
+        - --configmap=$(POD_NAMESPACE)/{{ template "nginx-ingress.controller.fullname" . }}
+        - --publish-service=$(POD_NAMESPACE)/{{ template "nginx-ingress.controller.fullname" . }}
+        resources:
+{{ toYaml .Values.controller.resources | indent 10 }}
+      {{- if .Values.controller.stats.enabled }}
+      - name: {{ template "nginx-ingress.statsExporter.fullname" . }}
+        image: {{ .Values.statsExporter.image.repository }}:{{ .Values.statsExporter.image.tag }}
+        env:
+        - name: METRICS_ADDR
+          value: ":9913"
+        - name: METRICS_ENDPOINT
+          value: "{{ .Values.statsExporter.endpoint }}"
+        - name: METRICS_NS
+          value: "{{ .Values.statsExporter.metricsNamespace }}"
+        - name: NGINX_STATUS
+          value: "{{ .Values.statsExporter.statusPage }}" 
+        ports:
+        - name: mterics
+          containerPort: {{ .Values.statsExporter.port }}
+          protocol: TCP
+        resources:
+{{ toYaml .Values.statsExporter.resources | indent 10}}
+      {{- end -}}

@@ -1,0 +1,30 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ template "nginx-ingress.controller.fullname" . }}
+  labels:
+    app: {{ template "nginx-ingress.name" . }}
+    component: {{ .Values.controller.name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+    {{- if .Values.dns.configure }}
+    dns.alpha.kubernetes.io/{{ .Values.dns.type}}: {{ .Values.dns.hosts | quote }}
+    {{- end }}
+    {{- if .Values.tls.enabled }}
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: {{.Values.tls.acmArn }}
+    {{- end }}
+spec:
+  type: LoadBalancer
+  selector:
+    app: {{ template "nginx-ingress.name" . }}
+    component: {{ .Values.controller.name }}
+  ports:
+  - name: http
+    port: {{ .Values.controller.ports.http }}
+    targetPort: http
+  - name: https
+    port: {{ .Values.controller.ports.https }}
+    targetPort: https

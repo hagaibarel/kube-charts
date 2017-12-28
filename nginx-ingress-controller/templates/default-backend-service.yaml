@@ -1,0 +1,17 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ template "nginx-ingress.defaultBackend.fullname" . }}
+  labels:
+    app: {{ template "nginx-ingress.name" . }}
+    component: {{ .Values.backend.name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  ports:
+  - port: {{ .Values.backend.ports.service }}
+    targetPort: http
+  selector:
+    app: {{ template "nginx-ingress.name" . }}
+    component: {{ .Values.backend.name }}

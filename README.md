@@ -37,7 +37,7 @@ Launch an ingress controller on AWS.
 
 This chart was inspired by the [examples found here](https://github.com/kubernetes/ingress/tree/master/examples/aws/nginx). Also, if you've used kops to launch your cluster and/or have the [dns-controller addon ](https://github.com/kubernetes/kops/tree/master/dns-controller), the chart supports configuration of a DNS record (via route53) to point to the ingress controller.
 
-For a more robust solution, you should check out the official [nginx-ingress](https://github.com/kubernetes/charts/tree/master/stable/nginx-ingress) chart on the stable chart repository.
+For a more robust solution, you should check out the official [nginx-ingress](https://github.com/kubernetes/charts/tree/master/stable/nginx-ingress) chart on the stable chart repository. This chart is heavily influenced by it, with some modifications to my liking.
 
 ### kafka-manager
 

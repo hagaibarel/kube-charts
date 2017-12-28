@@ -1,0 +1,19 @@
+{{- if .Values.controller.stats.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "nginx-ingress.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: {{ .Values.controller.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "nginx-ingress.controller.fullname" . }}-stats
+spec:
+  ports:
+  - name: stats
+    port: {{ .Values.controller.ports.stats }}
+  selector:
+    app: {{ template "nginx-ingress.name" . }}
+    component: {{ .Values.controller.name }}
+{{- end -}}

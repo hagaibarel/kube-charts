@@ -1,0 +1,14 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ template "nginx-ingress.controller.fullname" . }}
+  labels:
+    app: {{ template "nginx-ingress.name" . }}
+    component: {{ .Values.controller.name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+  use-proxy-protocol: "true"
+  enable-vts-status: "{{ .Values.controller.stats.enabled }}"
+  ssl-redirect: "true"
