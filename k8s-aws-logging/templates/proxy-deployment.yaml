@@ -1,42 +1,55 @@
-apiVersion: extensions/v1beta1
+{{- if .Values.proxy.enabled }}
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.proxy.name }}
+  name: {{ template "proxy.fullname" . }}
   labels:
-    component: {{ .Values.proxy.name }}
+    app: {{ template "fluent-bit.name" . }}
+    component: {{ template "proxy.fullname" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.proxy.replicas }}
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 50%
-      maxUnavailable: 0%
+{{ toYaml .Values.proxy.updateStrategy | indent 4 }}
+  selector:
+    matchLabels:
+      app: {{ template "fluent-bit.name" . }}
+      component: {{ template "proxy.fullname" . }}
   template:
     metadata:
       labels:
-        component: {{ .Values.proxy.name }}
+        app: {{ template "fluent-bit.name" . }}
+        component: {{ template "proxy.fullname" . }}
+      {{- if .Values.proxy.annotations }}
+      annotations:
+{{ toYaml .Values.proxy.annotations | indent 8 }}
+      {{- end }}
     spec:
       containers:
-      - name: {{ .Values.proxy.name }}
-        image: {{ .Values.proxy.image.repo }}/{{ .Values.proxy.image.name }}:{{ .Values.proxy.image.tag }}
+      - name: {{ template "proxy.fullname" . }}
+        image: "{{ .Values.proxy.image.repo }}:{{ .Values.proxy.image.tag }}"
+        resources:
+{{ toYaml .Values.proxy.resources | indent 10 }}
         ports:
-        - containerPort: {{ .Values.service.port }}
+        - containerPort: {{ .Values.es.port }}
           protocol: TCP
         env:
         {{- range $key, $value := .Values.proxy.env }}
         - name: {{ $key | upper | replace "-" "_" | quote }}
           value: {{ $value | quote }}
         {{- end }}
+        {{- if .Values.proxy.creds }}
         - name: "AWS_ACCESS_KEY_ID"
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.proxy.secret }}
-              key: access-key-id
+              name: {{ template "proxy.fullname" . }}
+              key: aws_access_key_id
         - name: "AWS_SECRET_ACCESS_KEY"
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.proxy.secret }}
-              key: secret-access-key
+              name: {{ template "proxy.fullname" . }}
+              key: aws_secret_access_key
+        {{- end }}
+{{- end }}

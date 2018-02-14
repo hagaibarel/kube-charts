@@ -1,0 +1,3 @@
+fluent-bit is now running.
+
+It will forward all container logs to the svc named {{ .Values.es.host }} on port: {{ .Values.es.port }}

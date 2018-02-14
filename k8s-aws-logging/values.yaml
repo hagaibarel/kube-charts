@@ -1,38 +1,87 @@
-service:
-  name: elasticsearch-logging
+image:
+  repository: fluent/fluent-bit
+  tag: 0.12.13
+  
+pullPolicy: IfNotPresent
+
+## This is actually the proxy service that relys to AWS es service
+es:
+  host: elasticsearch
   port: 9200
 
-proxy:
-  name: aws-es-proxy
-  # note that the secret should be applied to the cluster beforehand
-  # it should holds two kyes: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
-  secret: aws-es-creds
-  replicas: 2
-  image:
-    repo: kope
-    name: aws-es-proxy
-    tag: latest
-  env:
-    AWS_REGION: #add the relevent aws region, like us-east-1
-    ES: #add the relevent aws es endpoint 
+resources:
+  limits:
+    memory: 100Mi
+    cpu: 100m
+  requests:
+    cpu: 50m
+    memory: 50Mi
 
-fluentd:
-  name: aws-es-fluentd
+## If true, check to see if the log field content is a JSON string map, if so,
+## it append the map fields as part of the log structure.
+## Ref: http://fluentbit.io/documentation/0.12/filter/kubernetes.html
+filter:
+  mergeJsonLog: "false" # Allowed values are true/false
+
+## Tail input configuration
+## Ref: http://fluentbit.io/documentation/0.12/input/tail.html
+input:
+  memBufLimit: "5MB"
+  refresh: 10 # seconds
+
+## Node tolerations for fluent-bit scheduling to nodes with taints
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+tolerations: {}
+  #- key: node-role.kubernetes.io/master
+  #  operator: Exists
+  #  effect: NoSchedule
+
+## Node labels for fluent-bit pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+nodeSelector: {}
+
+## proxy settings
+## Ref: https://github.com/kopeio/aws-es-proxy 
+proxy:
+  enabled: true
+
+  name: aws-es-proxy
+
+  annotations: {}
+    #iam.amazonaws.com/role: es-proxy
+
   image:
-    repo: "gcr.io/google_containers"
-    name: fluentd-elasticsearch
-    tag: "1.22"
-  memory: "200Mi"
-  cpu: "100m"
-  mounts:
-    syslog:
-      name: varlog
-      path: /var/log
-    dockerlog:
-      name: varlibdockercontainers
-      path: /var/lib/docker/containers
-  # set to false to ignore toleration and not place fluentd pods on
-  # master nodes
-  placeOnMasters: 
-    enabled: true
-    tolerationKey: node-role.kubernetes.io/master
+    repo: kope/aws-es-proxy
+    tag: latest
+  
+  pullPolicy: "Always"
+
+  replicas: 2
+
+  ## AWS ES settings
+  ## Ref: https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html
+  env:
+    aws_region: "" #set to the aws region where es is running
+    es: "" # the es endpoint (you can find it in the console)
+
+  ## Deployment update strategy
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#Strategy
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 0%
+
+  resources:
+    limits:
+      memory: 100Mi
+      cpu: 100m
+    requests:
+      cpu: 50m
+      memory: 50Mi
+  
+  ## if set, will create a secret and env values
+  ## use this or a role, not both
+  creds: {}
+    #aws_access_key_id: XXXAAAZZZ
+    #aws_secret_access_key: YYYZZZTTT

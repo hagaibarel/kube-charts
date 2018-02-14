@@ -4,7 +4,7 @@ Assortment of helm charts I wrote while working on various projects. <b>Use at y
 These are by far <b>not</b> production grade charts (although some are used in production) and can't be used as is. 
 Check the relevant docs in each chart folder for details on how to configure and use them.
 
-Contributors are welcomed!
+Contributors are welcome!
 
 ## How to use
 
@@ -27,9 +27,9 @@ More info regarding curator can be found in the [official repo](https://github.c
 
 ### k8s-aws-logging
 
-Harvest logs with fluentd and ship them to AWS' ES service via proxy.
+Harvest logs with fluent-bit and ship them to AWS' ES service via proxy.
 
-This chart uses the great proxy written by [kopeio](https://github.com/kopeio/aws-es-proxy), check it out. Also, the chart is based on the elasticsearch-logging component that's part of [kubernetes' add-ons](https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/fluentd-elasticsearch), and was inspired by it.
+This chart uses the great proxy found here [kopeio](https://github.com/kopeio/aws-es-proxy), check it out. Also, the chart is based on the [fluent-bit](https://github.com/kubernetes/charts/tree/master/stable/fluent-bit) chart and was inspired by it.
 
 ### nginx-ingress-controller
 
