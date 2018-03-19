@@ -1,5 +1,8 @@
+apiVersion: v1
+version: 0.3.0
+appVersion: 5.4.0
+tillerVersion: ">=2.4.0"
 name: curator
-version: 0.2.0
 description: "Curator: Tending your Elasticsearch indices"
 home: https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html 
 icon: https://static-www.elastic.co/assets/blt6050efb80ceabd47/elastic-logo%20(2).svg?q=546

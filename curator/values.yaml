@@ -1,20 +1,41 @@
+#See compatability matrix for relevent versions:
+#Ref: https://github.com/elastic/curator#compatibility-matrix
+#Ref: https://hub.docker.com/r/bobrik/curator/tags/
 image:
-  name: bobrik/curator
-  #see compatability matrix for relevent versions:
-  #https://github.com/elastic/curator#compatibility-matrix
-  #https://hub.docker.com/r/bobrik/curator/tags/
-  tag: "5.1.1"
+  repo: bobrik/curator
+  tag: 5.4.0
 
+# Indices older than these will be deleted, in days
 indicesAge: 7
 
+# Mount path for the configmap
 mountPath: /etc/config
 
+# Schedule to run jobs. Must be in cron time format
+# Ref: https://crontab.guru/
 schedule: "0 1 * * *"
 
+# How many jobs to keep in history
 history:
   successfulJobs: 1
   failedJobs: 3
 
+# ElasticSearch connection details
 elasticsearch:
-  host: elasticsearch-logging
+  host: elasticsearch
   port: 9200
+
+# Sane defaults for resources, tweak for your needs
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 100m
+  limits:
+    memory: 512Mi
+    cpu: 200m
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

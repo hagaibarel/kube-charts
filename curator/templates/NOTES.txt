@@ -1,0 +1,17 @@
+CronJob {{ template "curator.name" . }} has been installed in the cluster.
+
+Get the CronJob by running these commands:
+
+$ kubectl get cronjob --namespace {{ .Release.Namespace }} -l "app={{ template "curator.name" . }}, release={{ .Release.Name }}"
+
+To see previous jobs run:
+
+$ kubectl get jobs --namespace {{ .Release.Namespace }} -l "app={{ template "curator.name" . }}, release={{ .Release.Name }}"
+
+To get logs of the previous pod run:
+
+$ export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "curator.name" . }}, release={{ .Release.Name }}" --show-all -o jsonpath="{.items[0].metadata.name}")
+$ kubectl logs --namespace {{ .Release.Namespace }} POD_NAME
+
+For more information tweaking a CronJob, visit:
+https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/

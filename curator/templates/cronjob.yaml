@@ -1,12 +1,12 @@
-apiVersion: batch/v2alpha1 #for API server versions >= 1.8.0 use batch/v1beta1
+apiVersion: batch/v1beta1 #for API server versions < 1.8.0 use batch/v2alpha1 and enable it in the API server
 kind: CronJob
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ template "curator.fullname" . }}
   labels:
-    app: {{ .Chart.Name }}
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    release: "{{ .Release.Name }}"
-    heritage: "{{ .Release.Service }}" 
+    app: {{ template "curator.name" . }}
+    chart: {{ template "curator.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   schedule: {{ .Values.schedule | quote }}
   successfulJobsHistoryLimit: {{ .Values.history.successfulJobs }}
@@ -18,14 +18,33 @@ spec:
       template:
         spec:
           containers:
-          - image: {{ .Values.image.name }}:{{ .Values.image.tag }}
-            name: {{ .Chart.Name }}
-            args: ["--config", "{{ .Values.mountPath }}/config.yml", "{{ .Values.mountPath }}/action_file.yml"]
+          - name: {{ template "curator.name" . }}
+            image: "{{ .Values.image.repo }}:{{ .Values.image.tag }}"
+            args: 
+            - --config 
+            - {{ .Values.mountPath }}/config.yml
+            - {{ .Values.mountPath }}/action_file.yml
             volumeMounts:
             - name: config
               mountPath: {{ .Values.mountPath }}
+          {{- with .Values.resources }}
+            resources:
+{{ toYaml . | indent 14}}
+          {{- end }}
           volumes:
           - name: config
             configMap:
-              name: {{ .Chart.Name }}-config
+              name: {{ template "curator.fullname" . }}-config
           restartPolicy: OnFailure
+      {{- with .Values.nodeSelector }}
+        nodeSelector:
+{{ toYaml . | indent 10 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+        affinity:
+{{ toYaml . | indent 10 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+        tolerations:
+{{ toYaml . | indent 10 }}
+      {{- end }}
