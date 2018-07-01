@@ -1,13 +1,13 @@
 replicaCount: 1
 
 image:
-  repository: sheepkiller/kafka-manager
-  tag: "1.3.1.8"
+  repository: nuvo/kafka-manager
+  tag: "v1"
 
 service:
   name: kafka-manager
   port: 9000
-  type: LoadBalancer
+  type: NodePort
 
 env:
   ZK_HOSTS: "zookeeper:2181"

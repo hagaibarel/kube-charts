@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ .Chart.Name }}
   labels:
-    app: {{ .Chart.name }}
+    app: {{ .Chart.Name }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}" 

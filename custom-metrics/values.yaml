@@ -1,0 +1,35 @@
+# Default values for custom-metrics.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: directxman12/k8s-prometheus-adapter
+  tag: advanced-config
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 443
+
+flags: 
+  logtostderr: "true"
+  metrics-relist-interval: 30s
+  rate-interval: 60s
+  prometheus-url: http://prometheus-server/
+  v: 2
+
+resources:
+  limits:
+    memory: 500Mi
+    cpu: 500m
+  requests:
+    memory: 100Mi
+    cpu: 100m
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

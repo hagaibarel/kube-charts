@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "custom-metrics.name" . }}
+  labels:
+    app: {{ template "custom-metrics.name" . }}
+    chart: {{ template "custom-metrics.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "custom-metrics.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "custom-metrics.name" . }}
+        release: {{ .Release.Name }}
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ template "custom-metrics.name" . }}
+      containers:
+      - name: custom-metrics
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        args:
+        - /adapter
+        - --secure-port=6443
+        - --tls-cert-file=/var/run/certs/tls.crt
+        - --tls-private-key-file=/var/run/certs/tls.key
+        {{- range $key, $val := .Values.flags }}
+        - --{{ $key }}={{ $val }}
+        {{- end }}
+        ports:
+        - containerPort: 6443
+          name: https
+          protocol: TCP
+        volumeMounts:
+        - name: certs
+          mountPath: /var/run/certs
+          readOnly: true
+        resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+      - name: certs
+        secret:
+          secretName: {{ template "custom-metrics.name" . }}-certs

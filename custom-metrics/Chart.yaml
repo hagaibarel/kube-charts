@@ -1,0 +1,11 @@
+apiVersion: v1
+name: custom-metrics
+version: 0.2.1
+description: Kubernetes prometheus adapter for custom metrics
+icon: https://github.com/kubernetes/kubernetes/blob/master/logo/logo.png
+maintainers:
+  - name: Maor Friedman
+    email: maor.friedman@nuvo-group.com
+  - name: Hagai Barel
+    email: hagai.barel@nuvo-group.com
+engine: gotpl
