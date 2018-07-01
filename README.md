@@ -45,6 +45,8 @@ A tool for managing Apache Kafka.
 
 For more details on kafka-manager itself, please refer to the official [github repo](https://github.com/yahoo/kafka-manager). I'm using sheepkiller's docker [image](https://github.com/sheepkiller/kafka-manager-docker), check out the repo for more info.
 
-## TODO
-- [ ] Write documentation for each chart
-- [ ] Add notes.txt for each chart to help guide folks after chart installation
+### Custom Metrics
+
+A chartified version of the guide found here - https://github.com/stefanprodan/k8s-prom-hpa
+
+Features some helm magic in order to create the tls certificates on chart install
